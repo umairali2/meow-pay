@@ -11,16 +11,20 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Create tables
+// Create tables with enhanced schema
 const initializeDatabase = () => {
   db.serialize(() => {
+    // Enable foreign keys
+    db.run('PRAGMA foreign_keys = ON');
+
     // Create cats table
     db.run(`
       CREATE TABLE IF NOT EXISTS cats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         balance INTEGER NOT NULL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `, (err) => {
       if (err) {
@@ -39,14 +43,42 @@ const initializeDatabase = () => {
         amount INTEGER NOT NULL,
         status TEXT DEFAULT 'completed',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (sender_id) REFERENCES cats(id),
-        FOREIGN KEY (receiver_id) REFERENCES cats(id)
+        FOREIGN KEY (sender_id) REFERENCES cats(id) ON DELETE CASCADE,
+        FOREIGN KEY (receiver_id) REFERENCES cats(id) ON DELETE CASCADE
       )
     `, (err) => {
       if (err) {
         console.error('Error creating transactions table:', err.message);
       } else {
         console.log('Transactions table created or already exists');
+      }
+    });
+
+    // Create indexes for better query performance
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_transactions_sender 
+      ON transactions(sender_id)
+    `, (err) => {
+      if (err) {
+        console.error('Error creating sender index:', err.message);
+      }
+    });
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_transactions_receiver 
+      ON transactions(receiver_id)
+    `, (err) => {
+      if (err) {
+        console.error('Error creating receiver index:', err.message);
+      }
+    });
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_transactions_created_at 
+      ON transactions(created_at DESC)
+    `, (err) => {
+      if (err) {
+        console.error('Error creating timestamp index:', err.message);
       }
     });
 
@@ -64,11 +96,14 @@ const seedData = () => {
     }
 
     if (row.count === 0) {
-      // Insert sample cats
+      // Insert sample cats with more variety
       const cats = [
         { name: 'Whiskers', balance: 100 },
         { name: 'Mittens', balance: 50 },
-        { name: 'Shadow', balance: 75 }
+        { name: 'Shadow', balance: 75 },
+        { name: 'Luna', balance: 120 },
+        { name: 'Oliver', balance: 30 },
+        { name: 'Simba', balance: 200 }
       ];
 
       const stmt = db.prepare('INSERT INTO cats (name, balance) VALUES (?, ?)');
@@ -85,7 +120,7 @@ const seedData = () => {
 
       stmt.finalize();
     } else {
-      console.log('Database already contains data');
+      console.log(`Database already contains ${row.count} cats`);
     }
   });
 };
