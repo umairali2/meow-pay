@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { transactionApi } from '@/lib/api';
+import { useRefresh } from '@/contexts/RefreshContext';
 import type { Transaction } from '@/types/api';
 import CatAccounts from '@/components/CatAccounts';
 
@@ -9,11 +10,11 @@ export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { refreshTrigger, triggerRefresh } = useRefresh();
 
   useEffect(() => {
     loadTransactions();
-  }, []);
+  }, [refreshTrigger]);
 
   const loadTransactions = async () => {
     try {
@@ -34,7 +35,7 @@ export default function Home() {
   };
 
   const handleRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
+    triggerRefresh();
     loadTransactions();
   };
 

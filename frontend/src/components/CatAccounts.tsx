@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { catApi } from '@/lib/api';
+import { useRefresh } from '@/contexts/RefreshContext';
 import type { Cat } from '@/types/api';
 import CatCard from './CatCard';
 
@@ -9,18 +10,17 @@ interface CatAccountsProps {
   onCatSelect?: (cat: Cat) => void;
   selectedCatId?: number;
   showId?: boolean;
-  refreshTrigger?: number;
 }
 
 export default function CatAccounts({ 
   onCatSelect, 
   selectedCatId, 
-  showId = true,
-  refreshTrigger 
+  showId = true
 }: CatAccountsProps) {
   const [cats, setCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { refreshTrigger } = useRefresh();
 
   const loadCats = async () => {
     try {
