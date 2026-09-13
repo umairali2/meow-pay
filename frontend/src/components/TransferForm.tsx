@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { catApi, transferApi } from '@/lib/api';
 import { useRefresh } from '@/contexts/RefreshContext';
-import type { Cat, TransferRequest, TransferValidationResponse } from '@/types/api';
+import type { Cat, TransferRequest, TransferValidationResponse, TransferResponse } from '@/types/api';
+import TransactionReceipt from './TransactionReceipt';
 
 interface TransferFormProps {
   onSuccess?: () => void;
@@ -18,7 +19,7 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
   const [validating, setValidating] = useState(false);
   const [validation, setValidation] = useState<TransferValidationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState<TransferResponse | null>(null);
   const { triggerRefresh } = useRefresh();
 
   useEffect(() => {
@@ -75,7 +76,12 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
 
     const amountNum = parseInt(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      setError('Please enter a valid amount');
+      setError('Please enter a valid positive amount');
+      return;
+    }
+
+    if (amountNum > 10000) {
+      setError('Maximum transfer amount is 10,000 treats');
       return;
     }
 
@@ -96,7 +102,7 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
       }
     } catch (err) {
       console.error('Validation error:', err);
-      setError('Failed to validate transfer');
+      setError('Failed to validate transfer. Please check your connection and try again.');
     } finally {
       setValidating(false);
     }
@@ -124,18 +130,18 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
       });
 
       if (response.success) {
-        setSuccess(`Successfully transferred ${amount} treats! Confirmation: ${response.data.confirmationCode}`);
+        setReceipt(response.data);
         triggerRefresh();
         setTimeout(() => {
           onSuccess?.();
           resetForm();
-        }, 2000);
+        }, 5000);
       } else {
-        setError('Transfer failed');
+        setError('Transfer failed. Please try again or contact support if the problem persists.');
       }
     } catch (err) {
       console.error('Transfer error:', err);
-      setError('Failed to execute transfer');
+      setError('Failed to execute transfer. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -147,7 +153,7 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
     setAmount('');
     setValidation(null);
     setError(null);
-    setSuccess(null);
+    setReceipt(null);
   };
 
   const selectedSender = cats.find(cat => cat.id === senderId);
@@ -162,13 +168,28 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800 font-medium">{error}</p>
+          <div className="flex items-start">
+            <span className="text-red-500 mr-2 mt-0.5">⚠️</span>
+            <div>
+              <p className="text-red-800 font-medium">Transfer Error</p>
+              <p className="text-red-700 text-sm mt-1">{error}</p>
+            </div>
+          </div>
         </div>
       )}
 
       {success && (
         <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-green-800 font-medium">{success}</p>
+        </div>
+      )}
+
+      {receipt && (
+        <div className="mb-6">
+          <TransactionReceipt 
+            receipt={receipt} 
+            onClose={() => setReceipt(null)} 
+          />
         </div>
       )}
 
