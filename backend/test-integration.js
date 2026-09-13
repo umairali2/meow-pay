@@ -8,12 +8,7 @@ const API_BASE_URL = process.env.API_URL || 'http://localhost:3001';
 // Check if fetch is available (Node.js 18+), otherwise require node-fetch
 let fetch;
 if (typeof global.fetch === 'undefined') {
-  try {
-    fetch = require('node-fetch');
-  } catch (error) {
-    console.error('Please install node-fetch: npm install node-fetch');
-    process.exit(1);
-  }
+  fetch = require('node-fetch');
 } else {
   fetch = global.fetch;
 }
