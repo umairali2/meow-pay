@@ -51,6 +51,8 @@ app.get('/', (req, res) => {
       health: '/health',
       cats: '/api/cats',
       transactions: '/api/transactions',
+      transactionsStats: '/api/transactions/statistics',
+      catTransactions: '/api/transactions/cat/:catId',
       transfer: '/api/transfer'
     }
   });
