@@ -6,11 +6,7 @@ import { useRefresh } from '@/contexts/RefreshContext';
 import type { Cat, TransferRequest, TransferValidationResponse, TransferResponse } from '@/types/api';
 import TransactionReceipt from './TransactionReceipt';
 
-interface TransferFormProps {
-  onSuccess?: () => void;
-}
-
-export default function TransferForm({ onSuccess }: TransferFormProps) {
+export default function TransferForm() {
   const [cats, setCats] = useState<Cat[]>([]);
   const [senderId, setSenderId] = useState<number | null>(null);
   const [receiverId, setReceiverId] = useState<number | null>(null);
@@ -133,7 +129,6 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
         setReceipt(response.data);
         triggerRefresh();
         setTimeout(() => {
-          onSuccess?.();
           resetForm();
         }, 5000);
       } else {
