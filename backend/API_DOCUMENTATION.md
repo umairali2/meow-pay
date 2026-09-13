@@ -280,7 +280,9 @@ Transfer treats from one cat to another with receipt generation.
 **Parameters:**
 - `senderId` (required): ID of the cat sending treats (positive integer)
 - `receiverId` (required): ID of the cat receiving treats (positive integer)
-- `amount` (required): Number of treats to transfer (positive number, max 10,000 per transfer)
+- `amount` (required): Number of treats to transfer (positive number, max 10,000,000 for validation purposes)
+
+**Note:** This endpoint has relaxed validation limits (up to 10M treats) to allow users to preview larger transfers, though the actual transfer endpoint limits to 10,000 treats per transaction.
 
 **Validation Rules:**
 - senderId and receiverId must be different
@@ -289,6 +291,7 @@ Transfer treats from one cat to another with receipt generation.
 - amount cannot exceed 10,000 (business limit)
 - Both cats must exist
 - Sender must have sufficient balance
+- Duplicate transfer prevention (same sender, receiver, amount within 1 minute)
 
 **Response:**
 ```json
@@ -320,9 +323,15 @@ Transfer treats from one cat to another with receipt generation.
 ```
 
 **Error Responses:**
-- `400 Bad Request`: Invalid request data, insufficient balance, self-transfer, or amount exceeds limit
+- `400 Bad Request`: Invalid request data, insufficient balance, self-transfer, amount exceeds limit, or duplicate transfer
 - `404 Not Found`: Sender or receiver cat not found
 - `500 Internal Server Error`: Database or server error
+
+**Special Features:**
+- **Receipt Generation**: Each transfer generates a unique confirmation code (e.g., `TXN-5-k4j92m-X7B3K9`)
+- **Processing Time**: Response includes transfer processing time in milliseconds
+- **Duplicate Prevention**: Prevents duplicate transfers within 1 minute
+- **Transfer Limits**: Maximum 10,000 treats per single transfer
 
 #### POST /api/transfer/validate
 Validate a transfer request without executing it.
