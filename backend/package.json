@@ -10,7 +10,7 @@
     "migrate": "node migrate.js",
     "test": "node test-api.js",
     "test:integration": "node test-integration.js",
-    "test:manual": "node manual-tests.js"
+    "test:manual": "SKIP_RATE_LIMIT=true node manual-tests.js"
   },
   "keywords": [],
   "author": "",

@@ -109,9 +109,11 @@ app.get('/', (req, res) => {
 });
 
 // Mount API routes with specific rate limiting
-app.use('/api/cats', defaultRateLimiter, catsRouter);
-app.use('/api/transactions', defaultRateLimiter, transactionsRouter);
-app.use('/api/transfer', transferRateLimiter, transferRouter);
+const skipRateLimit = process.env.SKIP_RATE_LIMIT === 'true';
+
+app.use('/api/cats', skipRateLimit ? (req, res, next) => next() : defaultRateLimiter, catsRouter);
+app.use('/api/transactions', skipRateLimit ? (req, res, next) => next() : defaultRateLimiter, transactionsRouter);
+app.use('/api/transfer', skipRateLimit ? (req, res, next) => next() : transferRateLimiter, transferRouter);
 
 // API info endpoint
 app.get('/api/info', (req, res) => {
