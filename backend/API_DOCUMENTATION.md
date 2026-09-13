@@ -128,10 +128,13 @@ Create a new cat account.
 ### Transactions
 
 #### GET /api/transactions
-Get all transactions.
+Get all transactions with optional filtering.
 
 **Query Parameters:**
 - `limit` (optional): Number of transactions to return (1-100, defaults to 50)
+- `senderId` (optional): Filter by sender cat ID
+- `receiverId` (optional): Filter by receiver cat ID
+- `status` (optional): Filter by transaction status
 
 **Response:**
 ```json
@@ -150,12 +153,52 @@ Get all transactions.
     }
   ],
   "count": 1,
+  "filters": {
+    "senderId": null,
+    "receiverId": null,
+    "status": null
+  },
+  "timestamp": "2026-09-13T10:30:00.000Z"
+}
+```
+
+#### GET /api/transactions/statistics
+Get comprehensive transaction statistics and analytics.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalTransactions": 15,
+    "totalTreatsTransferred": 375,
+    "averageTransferAmount": 25,
+    "mostActiveCats": [
+      {
+        "catId": 1,
+        "transactionCount": 8
+      }
+    ],
+    "largestTransactions": [
+      {
+        "id": 5,
+        "sender_id": 1,
+        "receiver_id": 2,
+        "amount": 100,
+        "status": "completed",
+        "created_at": "2026-09-13T10:15:00.000Z",
+        "sender_name": "Whiskers",
+        "receiver_name": "Mittens"
+      }
+    ],
+    "recentTransactions": [...]
+  },
   "timestamp": "2026-09-13T10:30:00.000Z"
 }
 ```
 
 #### GET /api/transactions/cat/:catId
-Get transactions for a specific cat (both sent and received).
+Get transactions for a specific cat (both sent and received) with statistics.
 
 **Parameters:**
 - `catId` (path parameter): Cat ID (positive integer)
@@ -179,6 +222,13 @@ Get transactions for a specific cat (both sent and received).
   ],
   "count": 1,
   "catId": 1,
+  "statistics": {
+    "sentCount": 5,
+    "receivedCount": 3,
+    "totalSent": 125,
+    "totalReceived": 75,
+    "netBalance": -50
+  },
   "timestamp": "2026-09-13T10:30:00.000Z"
 }
 ```

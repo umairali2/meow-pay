@@ -3,6 +3,46 @@ const router = express.Router();
 const { transactionOperations } = require('../db-utils');
 const { validateQueryLimit } = require('../middleware/validation');
 
+// GET /api/transactions - Get all transactions with optional filtering
+router.get('/', validateQueryLimit, async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 50;
+    const { senderId, receiverId, status } = req.query;
+    
+    let transactions = await transactionOperations.getAllTransactions(limit);
+    
+    // Apply filters if provided
+    if (senderId) {
+      transactions = transactions.filter(t => t.sender_id === parseInt(senderId));
+    }
+    if (receiverId) {
+      transactions = transactions.filter(t => t.receiver_id === parseInt(receiverId));
+    }
+    if (status) {
+      transactions = transactions.filter(t => t.status === status);
+    }
+    
+    res.json({
+      success: true,
+      data: transactions,
+      count: transactions.length,
+      filters: {
+        senderId: senderId || null,
+        receiverId: receiverId || null,
+        status: status || null
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch transactions',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // GET /api/transactions/statistics - Get transaction statistics
 router.get('/statistics', async (req, res) => {
   try {
@@ -95,46 +135,6 @@ router.get('/cat/:catId', validateQueryLimit, async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch cat transactions',
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-// GET /api/transactions - Get all transactions with optional filtering
-router.get('/', validateQueryLimit, async (req, res) => {
-  try {
-    const limit = req.query.limit ? parseInt(req.query.limit) : 50;
-    const { senderId, receiverId, status } = req.query;
-    
-    let transactions = await transactionOperations.getAllTransactions(limit);
-    
-    // Apply filters if provided
-    if (senderId) {
-      transactions = transactions.filter(t => t.sender_id === parseInt(senderId));
-    }
-    if (receiverId) {
-      transactions = transactions.filter(t => t.receiver_id === parseInt(receiverId));
-    }
-    if (status) {
-      transactions = transactions.filter(t => t.status === status);
-    }
-    
-    res.json({
-      success: true,
-      data: transactions,
-      count: transactions.length,
-      filters: {
-        senderId: senderId || null,
-        receiverId: receiverId || null,
-        status: status || null
-      },
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error fetching transactions:', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to fetch transactions',
       timestamp: new Date().toISOString()
     });
   }
