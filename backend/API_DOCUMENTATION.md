@@ -266,7 +266,7 @@ Get a specific transaction by ID.
 ### Transfer
 
 #### POST /api/transfer
-Transfer treats from one cat to another.
+Transfer treats from one cat to another with receipt generation.
 
 **Request Body:**
 ```json
@@ -280,13 +280,13 @@ Transfer treats from one cat to another.
 **Parameters:**
 - `senderId` (required): ID of the cat sending treats (positive integer)
 - `receiverId` (required): ID of the cat receiving treats (positive integer)
-- `amount` (required): Number of treats to transfer (positive number, max 1,000,000)
+- `amount` (required): Number of treats to transfer (positive number, max 10,000 per transfer)
 
 **Validation Rules:**
 - senderId and receiverId must be different
 - senderId and receiverId must be valid positive integers
-- amount must be a positive number
-- amount cannot exceed 1,000,000
+- amount must be a positive finite number
+- amount cannot exceed 10,000 (business limit)
 - Both cats must exist
 - Sender must have sufficient balance
 
@@ -296,13 +296,23 @@ Transfer treats from one cat to another.
   "success": true,
   "data": {
     "transactionId": 5,
-    "senderId": 1,
-    "senderName": "Whiskers",
-    "receiverId": 2,
-    "receiverName": "Mittens",
+    "timestamp": "2026-09-13T10:30:00.000Z",
+    "processingTimeMs": 45,
+    "from": {
+      "id": 1,
+      "name": "Whiskers",
+      "previousBalance": 100,
+      "newBalance": 75
+    },
+    "to": {
+      "id": 2,
+      "name": "Mittens",
+      "previousBalance": 50,
+      "newBalance": 75
+    },
     "amount": 25,
-    "newSenderBalance": 75,
-    "newReceiverBalance": 75
+    "status": "completed",
+    "confirmationCode": "TXN-5-k4j92m-X7B3K9"
   },
   "message": "Successfully transferred 25 treats from Whiskers to Mittens",
   "timestamp": "2026-09-13T10:30:00.000Z"
@@ -310,9 +320,51 @@ Transfer treats from one cat to another.
 ```
 
 **Error Responses:**
-- `400 Bad Request`: Invalid request data, insufficient balance, or self-transfer
+- `400 Bad Request`: Invalid request data, insufficient balance, self-transfer, or amount exceeds limit
 - `404 Not Found`: Sender or receiver cat not found
 - `500 Internal Server Error`: Database or server error
+
+#### POST /api/transfer/validate
+Validate a transfer request without executing it.
+
+**Request Body:**
+```json
+{
+  "senderId": 1,
+  "receiverId": 2,
+  "amount": 25
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "valid": true,
+  "data": {
+    "sender": {
+      "id": 1,
+      "name": "Whiskers",
+      "currentBalance": 100,
+      "sufficient": true
+    },
+    "receiver": {
+      "id": 2,
+      "name": "Mittens",
+      "currentBalance": 50
+    },
+    "transfer": {
+      "amount": 25,
+      "feasible": true,
+      "newSenderBalance": 75,
+      "newReceiverBalance": 75
+    }
+  },
+  "timestamp": "2026-09-13T10:30:00.000Z"
+}
+```
+
+**Use Case:** Use this endpoint to validate transfers before execution, allowing users to preview the outcome and confirm before finalizing.
 
 ## Error Codes
 
@@ -347,6 +399,11 @@ curl http://localhost:3001/api/cats
 curl -X POST http://localhost:3001/api/transfer \
   -H "Content-Type: application/json" \
   -d '{"senderId": 1, "receiverId": 2, "amount": 25}'
+
+# Validate a transfer before execution
+curl -X POST http://localhost:3001/api/transfer/validate \
+  -H "Content-Type: application/json" \
+  -d '{"senderId": 1, "receiverId": 2, "amount": 25}'
 ```
 
 #### Get transactions
@@ -373,6 +430,21 @@ fetch('http://localhost:3001/api/cats')
 
 // Create a transfer
 fetch('http://localhost:3001/api/transfer', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    senderId: 1,
+    receiverId: 2,
+    amount: 25
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Validate a transfer before execution
+fetch('http://localhost:3001/api/transfer/validate', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
