@@ -6,7 +6,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "init-db": "node init-db.js",
-    "migrate": "node migrate.js"
+    "migrate": "node migrate.js",
+    "test": "node test-api.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "node-fetch": "^3.3.2",
     "sqlite3": "^6.0.1"
   }
 }
