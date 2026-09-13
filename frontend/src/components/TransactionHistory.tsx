@@ -81,6 +81,84 @@ export default function TransactionHistory({
     }
   };
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-3"></div>
+            <p className="text-gray-600">Loading transactions...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="text-4xl mb-3">⚠️</div>
+          <p className="text-red-600 font-medium mb-3">{error}</p>
+          <button
+            onClick={loadTransactions}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
+    if (transactions.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="text-4xl mb-3">💳</div>
+          <p className="text-gray-600 font-medium mb-3">No transactions found</p>
+          <p className="text-sm text-gray-500">
+            {showFilters && (filterSender || filterReceiver || filterStatus)
+              ? 'Try adjusting your filters'
+              : 'Start transferring treats to see transaction history'}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {transactions.map((transaction) => (
+          <div
+            key={transaction.id}
+            className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                <span className="text-lg">📤</span>
+                <span className="font-medium text-gray-900">{transaction.sender_name}</span>
+                <span className="text-gray-400">→</span>
+                <span className="text-lg">📥</span>
+                <span className="font-medium text-gray-900">{transaction.receiver_name}</span>
+              </div>
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span>ID: {transaction.id}</span>
+                <span>•</span>
+                <span>{formatDate(transaction.created_at)}</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-orange-600">{transaction.amount}</p>
+                <p className="text-xs text-gray-600">treats</p>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                {transaction.status}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex items-center justify-between mb-6">
@@ -165,69 +243,7 @@ export default function TransactionHistory({
         </div>
       )}
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-3"></div>
-            <p className="text-gray-600">Loading transactions...</p>
-          </div>
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="text-4xl mb-3">⚠️</div>
-          <p className="text-red-600 font-medium mb-3">{error}</p>
-          <button
-            onClick={loadTransactions}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      ) : transactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="text-4xl mb-3">💳</div>
-          <p className="text-gray-600 font-medium mb-3">No transactions found</p>
-          <p className="text-sm text-gray-500">
-            {showFilters && (filterSender || filterReceiver || filterStatus)
-              ? 'Try adjusting your filters'
-              : 'Start transferring treats to see transaction history'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {transactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-lg">📤</span>
-                    <span className="font-medium text-gray-900">{transaction.sender_name}</span>
-                    <span className="text-gray-400">→</span>
-                    <span className="text-lg">📥</span>
-                    <span className="font-medium text-gray-900">{transaction.receiver_name}</span>
-                  </div>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>ID: {transaction.id}</span>
-                    <span>•</span>
-                    <span>{formatDate(transaction.created_at)}</span>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-orange-600">{transaction.amount}</p>
-                    <p className="text-xs text-gray-600">treats</p>
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                    {transaction.status}
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 }
