@@ -1,35 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { catApi, transactionApi } from '@/lib/api';
-import type { Cat, Transaction } from '@/types/api';
+import { transactionApi } from '@/lib/api';
+import type { Transaction } from '@/types/api';
+import CatAccounts from '@/components/CatAccounts';
 
 export default function Home() {
-  const [cats, setCats] = useState<Cat[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    loadData();
+    loadTransactions();
   }, []);
 
-  const loadData = async () => {
+  const loadTransactions = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const [catsResponse, transactionsResponse] = await Promise.all([
-        catApi.getAllCats(),
-        transactionApi.getAllTransactions({ limit: 10 })
-      ]);
+      const response = await transactionApi.getAllTransactions({ limit: 10 });
 
-      if (catsResponse.success) {
-        setCats(catsResponse.data);
-      }
-
-      if (transactionsResponse.success) {
-        setTransactions(transactionsResponse.data);
+      if (response.success) {
+        setTransactions(response.data);
       }
     } catch (err) {
       setError('Failed to load data. Please make sure the backend is running.');
@@ -37,6 +31,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+    loadTransactions();
   };
 
   if (loading) {
@@ -58,7 +57,7 @@ export default function Home() {
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Connection Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={loadData}
+            onClick={handleRefresh}
             className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
           >
             Retry
@@ -88,37 +87,24 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Cats Section */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="mr-2">🐱</span>
-              Cat Accounts
-            </h2>
-            <div className="space-y-3">
-              {cats.map((cat) => (
-                <div
-                  key={cat.id}
-                  className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-100"
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-900">{cat.name}</h3>
-                    <p className="text-sm text-gray-600">ID: {cat.id}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-orange-600">{cat.balance}</p>
-                    <p className="text-xs text-gray-600">treats</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Cat Accounts Section */}
+          <CatAccounts refreshTrigger={refreshTrigger} />
 
           {/* Recent Transactions */}
           <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="mr-2">💳</span>
-              Recent Transactions
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                <span className="mr-2">💳</span>
+                Recent Transactions
+              </h2>
+              <button
+                onClick={handleRefresh}
+                className="p-2 text-gray-500 hover:text-orange-600 transition-colors"
+                title="Refresh"
+              >
+                �
+              </button>
+            </div>
             <div className="space-y-3">
               {transactions.length === 0 ? (
                 <p className="text-gray-600 text-center py-8">No transactions yet</p>
