@@ -9,7 +9,8 @@
     "init-db": "node init-db.js",
     "migrate": "node migrate.js",
     "test": "node test-api.js",
-    "test:integration": "node test-integration.js"
+    "test:integration": "node test-integration.js",
+    "test:manual": "node manual-tests.js"
   },
   "keywords": [],
   "author": "",
