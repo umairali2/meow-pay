@@ -5,6 +5,7 @@ import { transactionApi } from '@/lib/api';
 import { useRefresh } from '@/contexts/RefreshContext';
 import type { Transaction } from '@/types/api';
 import CatAccounts from '@/components/CatAccounts';
+import TransferForm from '@/components/TransferForm';
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -138,22 +139,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Transfer Section Placeholder */}
-        <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">💸</span>
-            Send Treats
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Transfer treats between cats. Select a sender, receiver, and amount to complete the transfer.
-          </p>
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
-            <p className="text-orange-800 font-medium">Transfer interface coming soon...</p>
-            <p className="text-sm text-orange-600 mt-1">
-              This will be implemented in the next phase
-            </p>
-          </div>
-        </div>
+        {/* Transfer Section */}
+        <TransferForm onSuccess={handleRefresh} />
       </main>
 
       {/* Footer */}

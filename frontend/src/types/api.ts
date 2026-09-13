@@ -97,6 +97,7 @@ export interface TransferValidationRequest {
 }
 
 export interface TransferValidationResponse {
+  success: boolean;
   valid: boolean;
   data: {
     sender: {
@@ -117,6 +118,7 @@ export interface TransferValidationResponse {
       newReceiverBalance: number;
     };
   };
+  timestamp: string;
 }
 
 // Health Check Types
