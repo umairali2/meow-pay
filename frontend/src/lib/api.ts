@@ -97,10 +97,3 @@ export const systemApi = {
   getApiInfo: (): Promise<{ name: string; version: string; description: string; environment: string; endpoints: any; documentation: string; health: string; timestamp: string }> =>
     apiRequest('/api/info'),
 };
-
-export default {
-  catApi,
-  transactionApi,
-  transferApi,
-  systemApi,
-};
