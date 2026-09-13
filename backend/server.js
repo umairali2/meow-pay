@@ -33,13 +33,58 @@ app.use((req, res, next) => {
 // Initialize database
 initializeDatabase();
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
-    timestamp: new Date().toISOString(),
-    environment: NODE_ENV 
-  });
+// Health check endpoint with database status
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    const dbStatus = await new Promise((resolve, reject) => {
+      db.get('SELECT 1', (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve('connected');
+        }
+      });
+    });
+
+    // Get database statistics
+    const catCount = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM cats', (err, row) => {
+        if (err) reject(err);
+        else resolve(row.count);
+      });
+    });
+
+    const transactionCount = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM transactions', (err, row) => {
+        if (err) reject(err);
+        else resolve(row.count);
+      });
+    });
+
+    res.json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      environment: NODE_ENV,
+      database: {
+        status: dbStatus,
+        cats: catCount,
+        transactions: transactionCount
+      },
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      version: '1.0.0'
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      environment: NODE_ENV,
+      error: 'Database connection failed',
+      details: NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 });
 
 // API root endpoint
