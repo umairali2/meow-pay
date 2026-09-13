@@ -53,7 +53,8 @@ app.get('/', (req, res) => {
       transactions: '/api/transactions',
       transactionsStats: '/api/transactions/statistics',
       catTransactions: '/api/transactions/cat/:catId',
-      transfer: '/api/transfer'
+      transfer: '/api/transfer',
+      transferValidate: '/api/transfer/validate'
     }
   });
 });
