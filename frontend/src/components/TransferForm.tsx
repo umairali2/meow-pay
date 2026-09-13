@@ -92,7 +92,7 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
       if (response.success && response.valid) {
         setValidation(response);
       } else {
-        setError('Transfer is not possible');
+        setError('Transfer is not possible - check balance and try again');
       }
     } catch (err) {
       console.error('Validation error:', err);
