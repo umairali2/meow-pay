@@ -99,7 +99,8 @@ app.get('/', (req, res) => {
       transactionsStats: '/api/transactions/statistics',
       catTransactions: '/api/transactions/cat/:catId',
       transfer: '/api/transfer',
-      transferValidate: '/api/transfer/validate'
+      transferValidate: '/api/transfer/validate',
+      apiInfo: '/api/info'
     }
   });
 });
@@ -108,6 +109,36 @@ app.get('/', (req, res) => {
 app.use('/api/cats', catsRouter);
 app.use('/api/transactions', transactionsRouter);
 app.use('/api/transfer', transferRouter);
+
+// API info endpoint
+app.get('/api/info', (req, res) => {
+  res.json({
+    name: 'MeowPay API',
+    version: '1.0.0',
+    description: 'Digital wallet API for cats to transfer treats',
+    environment: NODE_ENV,
+    endpoints: {
+      cats: {
+        getAll: 'GET /api/cats',
+        getById: 'GET /api/cats/:id',
+        create: 'POST /api/cats'
+      },
+      transactions: {
+        getAll: 'GET /api/transactions',
+        getStatistics: 'GET /api/transactions/statistics',
+        getByCat: 'GET /api/transactions/cat/:catId',
+        getById: 'GET /api/transactions/:id'
+      },
+      transfer: {
+        execute: 'POST /api/transfer',
+        validate: 'POST /api/transfer/validate'
+      }
+    },
+    documentation: '/api/docs',
+    health: '/health',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // 404 handler
 app.use((req, res) => {
