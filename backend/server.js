@@ -8,6 +8,9 @@ const catsRouter = require('./routes/cats');
 const transactionsRouter = require('./routes/transactions');
 const transferRouter = require('./routes/transfer');
 
+// Import middleware
+const { defaultRateLimiter, transferRateLimiter } = require('./middleware/rateLimit');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -105,10 +108,10 @@ app.get('/', (req, res) => {
   });
 });
 
-// Mount API routes
-app.use('/api/cats', catsRouter);
-app.use('/api/transactions', transactionsRouter);
-app.use('/api/transfer', transferRouter);
+// Mount API routes with specific rate limiting
+app.use('/api/cats', defaultRateLimiter, catsRouter);
+app.use('/api/transactions', defaultRateLimiter, transactionsRouter);
+app.use('/api/transfer', transferRateLimiter, transferRouter);
 
 // API info endpoint
 app.get('/api/info', (req, res) => {
