@@ -51,12 +51,49 @@ async function getTransactionCount() {
   return result.data?.count || 0;
 }
 
+const sqlite3 = require('sqlite3').verbose();
+
 // Helper function for delays
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function waitForRateLimit() {
-  console.log('   ⏳ Waiting 3 seconds to avoid rate limiting...');
-  await delay(3000);
+  // Rate limit is disabled during manual tests, but we keep a small delay for stability
+  await delay(200);
+}
+
+async function resetDatabase() {
+  const dbPath = process.env.DB_PATH || './meowpay.db';
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath);
+    
+    db.serialize(() => {
+      // Clear transactions
+      db.run('DELETE FROM transactions', (err) => {
+        if (err) reject(err);
+      });
+      
+      // Reset cat balances to original seed values
+      const seedData = [
+        [1, 100],  // Whiskers
+        [2, 50],   // Mittens
+        [3, 75],   // Shadow
+        [4, 120],  // Luna
+        [5, 30],   // Oliver
+        [6, 200]   // Simba
+      ];
+      
+      seedData.forEach(([id, balance]) => {
+        db.run('UPDATE cats SET balance = ? WHERE id = ?', [balance, id], (err) => {
+          if (err) reject(err);
+        });
+      });
+    });
+    
+    db.close((err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
 }
 
 async function runManualTests() {
@@ -69,8 +106,7 @@ async function runManualTests() {
   
   // Reset the database to ensure clean state
   console.log('   🔄 Resetting database...');
-  const { initializeDatabase } = require('./database');
-  await initializeDatabase();
+  await resetDatabase();
   await delay(1000);
   
   const initialCats = await apiRequest('/api/cats');
