@@ -57,6 +57,28 @@ router.post('/', validateTransferRequest, async (req, res) => {
       });
     }
 
+    // Check for potential duplicate transfers (same sender, receiver, amount within last minute)
+    const recentTransactions = await transactionOperations.getAllTransactions(10);
+    const duplicateCheck = recentTransactions.find(t => 
+      t.sender_id === senderId && 
+      t.receiver_id === receiverId && 
+      t.amount === amount &&
+      (Date.now() - new Date(t.created_at).getTime()) < 60000 // Within last minute
+    );
+
+    if (duplicateCheck) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Duplicate transfer detected. A similar transfer was processed recently.',
+        details: {
+          duplicateTransactionId: duplicateCheck.id,
+          duplicateTimestamp: duplicateCheck.created_at,
+          timeSinceDuplicate: Math.round((Date.now() - new Date(duplicateCheck.created_at).getTime()) / 1000) + ' seconds ago'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // Log transfer attempt
     console.log(`Transfer attempt: ${sender.name} (${senderId}) -> ${receiver.name} (${receiverId}), amount: ${amount}`);
 
