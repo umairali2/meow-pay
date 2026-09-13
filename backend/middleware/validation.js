@@ -47,11 +47,20 @@ const validateTransferRequest = (req, res, next) => {
     });
   }
 
-  // Validate amount is reasonable (max 1 million treats)
+  // Validate amount is reasonable (max 1 million treats - this is a soft limit, the actual limit is enforced in the route)
   if (amount > 1000000) {
     return res.status(400).json({
       error: 'Bad Request',
       message: 'amount cannot exceed 1,000,000 treats',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Validate amount is a finite number
+  if (!Number.isFinite(amount)) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'amount must be a finite number',
       timestamp: new Date().toISOString()
     });
   }
