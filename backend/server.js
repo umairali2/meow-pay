@@ -19,7 +19,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 app.use(cors({
   origin: NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
-    : ['http://localhost:3000', 'http://localhost:3001'],
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
   credentials: true
 }));
 
