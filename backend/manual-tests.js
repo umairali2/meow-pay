@@ -51,6 +51,14 @@ async function getTransactionCount() {
   return result.data?.count || 0;
 }
 
+// Helper function for delays
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function waitForRateLimit() {
+  console.log('   ⏳ Waiting 3 seconds to avoid rate limiting...');
+  await delay(3000);
+}
+
 async function runManualTests() {
   console.log('🧪 Starting MeowPay Manual Tests...');
   console.log(`📍 API URL: ${API_BASE_URL}`);
@@ -58,6 +66,13 @@ async function runManualTests() {
 
   // Test 1: Verify initial state
   console.log('\n📋 Initial State:');
+  
+  // Reset the database to ensure clean state
+  console.log('   🔄 Resetting database...');
+  const { initializeDatabase } = require('./database');
+  await initializeDatabase();
+  await delay(1000);
+  
   const initialCats = await apiRequest('/api/cats');
   const initialTransactions = await getTransactionCount();
   
@@ -93,8 +108,11 @@ async function runManualTests() {
     recordTest('Successful transfer', false, `Status: ${transferResult.status}, Response: ${JSON.stringify(transferResult.data)}`);
   }
 
+  await waitForRateLimit();
+
   // Test 3: Self-transfer
   console.log('\n🚫 Test 3: Self-Transfer Prevention');
+  await waitForRateLimit();
   const selfTransfer = await apiRequest('/api/transfer', {
     method: 'POST',
     body: JSON.stringify({
@@ -111,8 +129,11 @@ async function runManualTests() {
     recordTest('Self-transfer prevented', false, `Unexpected status: ${selfTransfer.status}, Response: ${JSON.stringify(selfTransfer.data)}`);
   }
 
+  await waitForRateLimit();
+
   // Test 4: Insufficient balance
   console.log('\n💰 Test 4: Insufficient Balance');
+  await waitForRateLimit();
   const oliverBefore = await getCatBalance(5);
   const insufficient = await apiRequest('/api/transfer', {
     method: 'POST',
@@ -134,6 +155,8 @@ async function runManualTests() {
     recordTest('Insufficient balance handled', false, 
       `Status: ${insufficient.status}, Balance: ${oliverBefore} → ${oliverAfter}`);
   }
+
+  await waitForRateLimit();
 
   // Test 5: Invalid amount (zero)
   console.log('\n⛔ Test 5: Invalid Amount (Zero)');
