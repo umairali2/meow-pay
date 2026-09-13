@@ -108,7 +108,7 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
       return;
     }
 
-    if (!validation || !validation.valid) {
+    if (!validation || !validation.data.transfer.feasible) {
       setError('Please validate the transfer first');
       return;
     }
@@ -261,8 +261,8 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-200">
                 <span className="text-gray-600">Status:</span>
-                <span className={`font-medium ${validation.valid ? 'text-green-600' : 'text-red-600'}`}>
-                  {validation.valid ? '✓ Feasible' : '✗ Not feasible'}
+                <span className={`font-medium ${validation.data.transfer.feasible ? 'text-green-600' : 'text-red-600'}`}>
+                  {validation.data.transfer.feasible ? '✓ Feasible' : '✗ Not feasible'}
                 </span>
               </div>
             </div>
@@ -272,6 +272,13 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
         {/* Action Buttons */}
         <div className="flex space-x-3">
           <button
+            onClick={resetForm}
+            disabled={loading}
+            className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+          >
+            Reset
+          </button>
+          <button
             onClick={validateTransfer}
             disabled={!senderId || !receiverId || !amount || validating || loading}
             className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
@@ -280,7 +287,7 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
           </button>
           <button
             onClick={executeTransfer}
-            disabled={!validation || !validation.valid || loading}
+            disabled={!validation || !validation.data.transfer.feasible || loading}
             className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Processing...' : 'Send Treats'}
