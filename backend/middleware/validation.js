@@ -134,8 +134,69 @@ const validateQueryLimit = (req, res, next) => {
   next();
 };
 
+// Validation for transfer validation endpoint (less strict than actual transfer)
+const validateTransferValidation = (req, res, next) => {
+  const { senderId, receiverId, amount } = req.body;
+
+  // Check if all required fields are present
+  if (!senderId || !receiverId || !amount) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Missing required fields: senderId, receiverId, and amount are required',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Validate senderId and receiverId are positive integers
+  if (!Number.isInteger(Number(senderId)) || senderId <= 0) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'senderId must be a positive integer',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  if (!Number.isInteger(Number(receiverId)) || receiverId <= 0) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'receiverId must be a positive integer',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Validate amount is a positive number
+  if (isNaN(amount) || amount <= 0) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'amount must be a positive number',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Validate sender and receiver are different
+  if (Number(senderId) === Number(receiverId)) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'senderId and receiverId must be different',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Allow larger amounts for validation (for preview purposes)
+  if (amount > 10000000) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'amount cannot exceed 10,000,000 treats for validation',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   validateTransferRequest,
+  validateTransferValidation,
   validateCatCreation,
   validateCatId,
   validateQueryLimit

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { performTransfer, catOperations, transactionOperations } = require('../db-utils');
-const { validateTransferRequest } = require('../middleware/validation');
+const { validateTransferRequest, validateTransferValidation } = require('../middleware/validation');
 
 // POST /api/transfer - Transfer treats from one cat to another
 router.post('/', validateTransferRequest, async (req, res) => {
@@ -161,7 +161,7 @@ function generateConfirmationCode(transactionId) {
 }
 
 // POST /api/transfer/validate - Validate transfer without executing
-router.post('/validate', validateTransferRequest, async (req, res) => {
+router.post('/validate', validateTransferValidation, async (req, res) => {
   try {
     const { senderId, receiverId, amount } = req.body;
     
