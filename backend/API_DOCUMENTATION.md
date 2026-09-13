@@ -352,6 +352,15 @@ curl -X POST http://localhost:3001/api/transfer \
 #### Get transactions
 ```bash
 curl http://localhost:3001/api/transactions
+
+# With filters
+curl "http://localhost:3001/api/transactions?senderId=1&limit=10"
+
+# Get transaction statistics
+curl http://localhost:3001/api/transactions/statistics
+
+# Get cat-specific transactions
+curl http://localhost:3001/api/transactions/cat/1
 ```
 
 ### Using JavaScript/Fetch
@@ -374,6 +383,21 @@ fetch('http://localhost:3001/api/transfer', {
     amount: 25
   })
 })
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Get transactions with filtering
+fetch('http://localhost:3001/api/transactions?senderId=1&limit=10')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Get transaction statistics
+fetch('http://localhost:3001/api/transactions/statistics')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Get cat-specific transactions
+fetch('http://localhost:3001/api/transactions/cat/1')
   .then(response => response.json())
   .then(data => console.log(data));
 ```
